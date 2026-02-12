@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Camera, Pencil } from "lucide-react";
+import { BookOpen, Camera, BookOpenText, Volume2 } from "lucide-react";
 import { CameraView } from "@/components/CameraView";
 import { WordPractice } from "@/components/WordPractice";
 import { ManualWordInput } from "@/components/ManualWordInput";
@@ -58,34 +58,38 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b-2 border-border">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
-          <motion.div
-            className="flex items-center gap-2 cursor-pointer"
-            whileHover={{ scale: 1.05 }}
-            onClick={() => {
-              camera.stopCamera();
-              setMode("home");
-              setSelectedWord(null);
-              setResult(null);
-            }}
-          >
-            <BookOpen className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-display text-foreground">Reading Pen AI</h1>
-          </motion.div>
-
-          {score > 0 && (
+      {/* Header - only show when not on home */}
+      {mode !== "home" && (
+        <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
+          <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="bg-success text-success-foreground px-4 py-2 rounded-full font-display text-lg"
+              className="flex items-center gap-2 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => {
+                camera.stopCamera();
+                setMode("home");
+                setSelectedWord(null);
+                setResult(null);
+              }}
             >
-              ⭐ {score}
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <h1 className="text-xl font-display text-foreground">Reading Pen AI</h1>
             </motion.div>
-          )}
-        </div>
-      </header>
+
+            {score > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-success text-success-foreground px-4 py-1.5 rounded-full font-display text-base"
+              >
+                ⭐ {score}
+              </motion.div>
+            )}
+          </div>
+        </header>
+      )}
 
       {/* Main content */}
       <main className="max-w-3xl mx-auto px-4 py-6">
@@ -96,48 +100,76 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex flex-col items-center gap-8 min-h-[70vh] justify-center"
+              className="flex flex-col items-center gap-6 min-h-[80vh] justify-center"
             >
+              {/* Icon */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center shadow-lg"
               >
-                <BookOpen className="w-28 h-28 text-primary" />
+                <BookOpen className="w-10 h-10 text-primary-foreground" />
               </motion.div>
 
+              {/* Title */}
               <div className="text-center">
-                <h1 className="text-5xl md:text-6xl font-display text-foreground text-shadow-playful mb-3">
+                <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3">
                   Reading Pen AI
                 </h1>
-                <p className="text-xl text-muted-foreground font-body max-w-md">
-                  Learn to read words by seeing, saying, and hearing them! 📚✨
+                <p className="text-lg text-muted-foreground font-body max-w-sm mx-auto leading-relaxed">
+                  Scan any page with your camera and follow along word by word. Say each word out loud and build your reading skills!
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* Feature badges */}
+              <div className="flex flex-wrap gap-3 justify-center">
+                <span className="flex items-center gap-2 border border-border bg-card px-4 py-2 rounded-full text-sm font-body text-foreground">
+                  <Camera className="w-4 h-4 text-muted-foreground" />
+                  Scan Pages
+                </span>
+                <span className="flex items-center gap-2 border border-border bg-card px-4 py-2 rounded-full text-sm font-body text-foreground">
+                  <Volume2 className="w-4 h-4 text-muted-foreground" />
+                  Read Aloud
+                </span>
+                <span className="flex items-center gap-2 border border-border bg-card px-4 py-2 rounded-full text-sm font-body text-foreground">
+                  <BookOpenText className="w-4 h-4 text-muted-foreground" />
+                  Follow Along
+                </span>
+              </div>
+
+              {/* CTA buttons */}
+              <div className="flex flex-col gap-3 w-full max-w-sm mt-2">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setMode("camera");
                     camera.startCamera();
                   }}
-                  className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-5 rounded-2xl shadow-lg text-xl font-display"
+                  className="flex items-center justify-center gap-3 bg-primary text-primary-foreground w-full py-4 rounded-xl shadow-md text-lg font-display"
                 >
-                  <Camera className="w-7 h-7" />
-                  Scan Text
+                  <Camera className="w-5 h-5" />
+                  Scan & Read
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setMode("manual")}
-                  className="flex items-center gap-3 bg-secondary text-secondary-foreground px-8 py-5 rounded-2xl shadow-lg text-xl font-display"
+                  className="flex items-center justify-center gap-3 bg-secondary text-secondary-foreground w-full py-4 rounded-xl shadow-md text-lg font-display"
                 >
-                  <Pencil className="w-7 h-7" />
-                  Type a Word
+                  <BookOpen className="w-5 h-5" />
+                  Practice Mode
                 </motion.button>
               </div>
+
+              {/* Privacy note */}
+              <p className="text-sm text-muted-foreground font-body text-center mt-4 max-w-xs leading-relaxed">
+                100% free. All processing happens on your device.
+                <br />
+                No data is sent to any server.
+              </p>
 
               {!speech.supported && (
                 <p className="text-destructive font-body text-sm text-center">

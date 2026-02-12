@@ -30,15 +30,38 @@ export function useCameraOCR(): UseCameraOCRReturn {
   const startCamera = useCallback(async () => {
     try {
       setError(null);
+
+      // Stop any existing stream first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setCameraReady(true);
-      }
+
+      // Wait for the video element to be available (it may not be mounted yet)
+      const attachStream = () => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play().then(() => {
+              setCameraReady(true);
+            }).catch(() => {
+              setError("Could not play video stream.");
+            });
+          };
+        } else {
+          // Video element not mounted yet, retry shortly
+          setTimeout(attachStream, 100);
+        }
+      };
+
+      // Set camera ready first so the video element renders, then attach
+      setCameraReady(true);
+      setTimeout(attachStream, 50);
     } catch {
       setError("Could not access camera. Please allow camera permissions.");
     }
@@ -47,6 +70,9 @@ export function useCameraOCR(): UseCameraOCRReturn {
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setCameraReady(false);
     setWords([]);
   }, []);
@@ -78,6 +104,16 @@ export function useCameraOCR(): UseCameraOCRReturn {
       setIsScanning(false);
     }
   }, []);
+
+  // Re-attach stream when videoRef becomes available
+  useEffect(() => {
+    if (cameraReady && streamRef.current && videoRef.current && !videoRef.current.srcObject) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.onloadedmetadata = () => {
+        videoRef.current?.play().catch(() => {});
+      };
+    }
+  });
 
   useEffect(() => {
     return () => {
