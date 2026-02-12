@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Camera, ScanText, Loader2 } from "lucide-react";
+import { Camera, Loader2, RefreshCw } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 
 interface DetectedWord {
@@ -34,6 +34,7 @@ export function CameraView({
 }: CameraViewProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [videoDims, setVideoDims] = useState({ w: 0, h: 0, displayW: 0, displayH: 0 });
+  const hasScannedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -56,32 +57,43 @@ export function CameraView({
     };
   }, [videoRef]);
 
+  // Auto-scan when camera becomes ready and video has dimensions
+  useEffect(() => {
+    if (cameraReady && videoDims.w > 0 && !hasScannedRef.current && !isScanning) {
+      hasScannedRef.current = true;
+      // Small delay to ensure video frame is rendered
+      const timer = setTimeout(() => onScan(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [cameraReady, videoDims.w, isScanning, onScan]);
+
   if (!cameraReady) {
     return (
       <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh]">
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="text-primary"
+          className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center"
         >
-          <Camera className="w-24 h-24" />
+          <Camera className="w-10 h-10 text-primary-foreground" />
         </motion.div>
         <h2 className="text-3xl font-display text-foreground text-center">
           Point your camera at some text!
         </h2>
         <p className="text-muted-foreground font-body text-lg text-center max-w-sm">
-          We'll find the words so you can practice reading them.
+          We'll find the words so you can tap and practice reading them.
         </p>
         {error && (
           <p className="text-destructive font-body text-center">{error}</p>
         )}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onStartCamera}
-          className="bg-primary text-primary-foreground px-10 py-5 rounded-2xl shadow-lg text-2xl font-display"
+          className="bg-primary text-primary-foreground px-10 py-4 rounded-xl shadow-md text-xl font-display flex items-center gap-3"
         >
-          Open Camera 📷
+          <Camera className="w-6 h-6" />
+          Open Camera
         </motion.button>
       </div>
     );
@@ -92,7 +104,16 @@ export function CameraView({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="relative w-full max-w-2xl rounded-3xl overflow-hidden shadow-xl border-4 border-primary">
+      {/* Instruction */}
+      <p className="text-muted-foreground font-body text-center text-base">
+        {isScanning
+          ? "Finding words..."
+          : words.length > 0
+          ? "Tap a highlighted word to practice reading it!"
+          : "Point your camera at text and tap Rescan"}
+      </p>
+
+      <div className="relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-xl border-2 border-border">
         <video
           ref={videoRef}
           playsInline
@@ -101,64 +122,72 @@ export function CameraView({
         />
         <canvas ref={canvasRef} className="hidden" />
 
+        {/* Scanning overlay */}
+        {isScanning && (
+          <div className="absolute inset-0 bg-foreground/20 flex items-center justify-center">
+            <div className="bg-card rounded-2xl px-6 py-4 flex items-center gap-3 shadow-lg">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <span className="font-body font-bold text-foreground">Scanning for words...</span>
+            </div>
+          </div>
+        )}
+
         {/* Word overlays */}
-        <div ref={overlayRef} className="absolute inset-0">
-          {words.map((word, i) => (
-            <motion.button
-              key={`${word.text}-${i}`}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.03 }}
-              onClick={() => onSelectWord(word.text)}
-              className={`absolute border-2 rounded-lg cursor-pointer transition-colors font-body font-bold text-sm ${
-                selectedWord === word.text
-                  ? "bg-primary/40 border-primary"
-                  : "bg-secondary/30 border-secondary/50 hover:bg-primary/30 hover:border-primary"
-              }`}
-              style={{
-                left: word.bbox.x0 * scaleX,
-                top: word.bbox.y0 * scaleY,
-                width: (word.bbox.x1 - word.bbox.x0) * scaleX,
-                height: (word.bbox.y1 - word.bbox.y0) * scaleY,
-              }}
-            />
-          ))}
-        </div>
+        {!isScanning && (
+          <div ref={overlayRef} className="absolute inset-0">
+            {words.map((word, i) => (
+              <motion.button
+                key={`${word.text}-${i}`}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.03 }}
+                onClick={() => onSelectWord(word.text)}
+                className={`absolute rounded-md cursor-pointer transition-all font-body font-bold text-sm ${
+                  selectedWord === word.text
+                    ? "bg-primary/50 border-2 border-primary ring-2 ring-primary/30"
+                    : "bg-primary/20 border-2 border-primary/40 hover:bg-primary/40 hover:border-primary"
+                }`}
+                style={{
+                  left: word.bbox.x0 * scaleX,
+                  top: word.bbox.y0 * scaleY,
+                  width: (word.bbox.x1 - word.bbox.x0) * scaleX,
+                  height: (word.bbox.y1 - word.bbox.y0) * scaleY,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Scan button */}
+      {/* Rescan button */}
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onScan}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          hasScannedRef.current = false;
+          onScan();
+        }}
         disabled={isScanning}
-        className="bg-secondary text-secondary-foreground px-8 py-4 rounded-2xl shadow-lg text-xl font-display flex items-center gap-3 disabled:opacity-50"
+        className="flex items-center gap-2 text-muted-foreground font-body text-base hover:text-foreground transition-colors disabled:opacity-50"
       >
-        {isScanning ? (
-          <Loader2 className="w-6 h-6 animate-spin" />
-        ) : (
-          <ScanText className="w-6 h-6" />
-        )}
-        {isScanning ? "Scanning..." : "Scan Text 🔍"}
+        <RefreshCw className={`w-4 h-4 ${isScanning ? "animate-spin" : ""}`} />
+        Rescan
       </motion.button>
 
       {/* Detected words list */}
-      {words.length > 0 && (
+      {words.length > 0 && !isScanning && (
         <div className="w-full max-w-2xl">
-          <p className="text-muted-foreground font-body text-center mb-3">
-            Tap a word to practice reading it!
-          </p>
           <div className="flex flex-wrap gap-2 justify-center">
             {words.map((w, i) => (
               <motion.button
                 key={`list-${w.text}-${i}`}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onSelectWord(w.text)}
-                className={`px-4 py-2 rounded-xl font-body font-bold text-lg shadow transition-colors ${
+                className={`px-4 py-2 rounded-xl font-body font-bold text-base shadow-sm transition-colors ${
                   selectedWord === w.text
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground border-2 border-border hover:border-primary"
+                    : "bg-card text-card-foreground border border-border hover:border-primary"
                 }`}
               >
                 {w.text}
