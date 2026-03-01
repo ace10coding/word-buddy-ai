@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Camera, BookOpenText, Volume2 } from "lucide-react";
+import { Camera, BookOpenText, Volume2 } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import { CameraView } from "@/components/CameraView";
 import { WordPractice } from "@/components/WordPractice";
 import { ManualWordInput } from "@/components/ManualWordInput";
@@ -72,8 +73,8 @@ const Index = () => {
                 setResult(null);
               }}
             >
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary-foreground" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img src={logoImg} alt="Reading Pen AI" className="w-8 h-8 object-contain" />
               </div>
               <h1 className="text-xl font-display text-foreground">Reading Pen AI</h1>
             </motion.div>
@@ -107,9 +108,9 @@ const Index = () => {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center shadow-lg"
+                className="w-24 h-24 flex items-center justify-center"
               >
-                <BookOpen className="w-10 h-10 text-primary-foreground" />
+                <img src={logoImg} alt="Reading Pen AI" className="w-24 h-24 object-contain" />
               </motion.div>
 
               {/* Title */}
@@ -159,7 +160,7 @@ const Index = () => {
                   onClick={() => setMode("manual")}
                   className="flex items-center justify-center gap-3 bg-secondary text-secondary-foreground w-full py-4 rounded-xl shadow-md text-lg font-display"
                 >
-                  <BookOpen className="w-5 h-5" />
+                  <img src={logoImg} alt="" className="w-6 h-6 object-contain" />
                   Practice Mode
                 </motion.button>
               </div>
