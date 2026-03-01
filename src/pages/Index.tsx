@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, BookOpenText, Volume2 } from "lucide-react";
+import { BookOpen, Camera, BookOpenText, Volume2 } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { CameraView } from "@/components/CameraView";
 import { WordPractice } from "@/components/WordPractice";
@@ -160,7 +160,7 @@ const Index = () => {
                   onClick={() => setMode("manual")}
                   className="flex items-center justify-center gap-3 bg-secondary text-secondary-foreground w-full py-4 rounded-xl shadow-md text-lg font-display"
                 >
-                  <img src={logoImg} alt="" className="w-6 h-6 object-contain mix-blend-multiply" />
+                  <BookOpen className="w-5 h-5" />
                   Practice Mode
                 </motion.button>
               </div>
