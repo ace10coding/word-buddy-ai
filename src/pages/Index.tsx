@@ -74,7 +74,7 @@ const Index = () => {
               }}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                <img src={logoImg} alt="Reading Pen AI" className="w-8 h-8 object-contain" />
+                <img src={logoImg} alt="Reading Pen AI" className="w-8 h-8 object-contain mix-blend-multiply" />
               </div>
               <h1 className="text-xl font-display text-foreground">Reading Pen AI</h1>
             </motion.div>
@@ -110,7 +110,7 @@ const Index = () => {
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
                 className="w-24 h-24 flex items-center justify-center"
               >
-                <img src={logoImg} alt="Reading Pen AI" className="w-24 h-24 object-contain" />
+                <img src={logoImg} alt="Reading Pen AI" className="w-24 h-24 object-contain mix-blend-multiply" />
               </motion.div>
 
               {/* Title */}
@@ -160,7 +160,7 @@ const Index = () => {
                   onClick={() => setMode("manual")}
                   className="flex items-center justify-center gap-3 bg-secondary text-secondary-foreground w-full py-4 rounded-xl shadow-md text-lg font-display"
                 >
-                  <img src={logoImg} alt="" className="w-6 h-6 object-contain" />
+                  <img src={logoImg} alt="" className="w-6 h-6 object-contain mix-blend-multiply" />
                   Practice Mode
                 </motion.button>
               </div>
